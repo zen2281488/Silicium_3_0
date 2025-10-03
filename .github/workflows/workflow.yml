@@ -5,17 +5,18 @@ on:
     branches: [ "*" ]
     paths: [ "**", "!*.md" ]
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
     environment: dev
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
-      - name: Set up JDK
-        uses: actions/setup-java@v3
+      - uses: actions/setup-java@v3
         with:
           java-version: '17'
           distribution: 'corretto'
@@ -30,40 +31,47 @@ jobs:
         run: sudo npm install -g allure-commandline --unsafe-perm=true
 
       - name: Run tests
-        run: |
-          mvn clean test -fail-at-end
+        run: mvn clean test -fail-at-end
 
-      - name: Checkout gh-pages branch
+      - name: Checkout gh-pages branch (history)
         if: always()
-        continue-on-error: true
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         with:
           ref: gh-pages
           path: gh-pages
+          fetch-depth: 1
+          persist-credentials: false
 
       - name: Collect Allure results
         if: always()
         run: |
           mkdir -p combined-allure-results
-          find . -type d -path "*/target/allure-results" | while read d; do
-            echo "Copying from $d"
-            cp -r "$d"/* combined-allure-results/ || echo "Nothing to copy"
-          done
+          find . -type d -path "*/target/allure-results" -print0 | xargs -0 -I{} cp -r {}/* combined-allure-results/ 2>/dev/null || true
 
       - name: Generate Allure report
         if: always()
-        uses: simple-elf/allure-report-action@master
-        id: allure
+        uses: simple-elf/allure-report-action@v1.7
         with:
           allure_results: combined-allure-results
-          gh_pages: gh-pages
+          gh_pages: gh-pages            # тут лежит старая история
           allure_report: allure-report
           allure_history: allure-history
+
+      - name: Ensure no nested .git in publish dir
+        if: always()
+        run: |
+          if [ -d allure-history/.git ]; then
+            chmod -R u+w allure-history/.git || true
+            rm -rf allure-history/.git
+          fi
 
       - name: Deploy Allure report to GitHub Pages
         if: always()
         uses: peaceiris/actions-gh-pages@v3
         with:
-          personal_token: ${{ secrets.GITHUB_TOKEN }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: allure-history
           publish_branch: gh-pages
+          force_orphan: true
+          keep_files: false
+          enable_jekyll: false
