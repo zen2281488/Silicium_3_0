@@ -1,0 +1,69 @@
+name: Java CI with Allure
+
+on:
+  push:
+    branches: [ "*" ]
+    paths: [ "**", "!*.md" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    environment: dev
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'corretto'
+          cache: maven
+
+      - name: Install Chrome
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y google-chrome-stable
+
+      - name: Install Allure CLI
+        run: sudo npm install -g allure-commandline --unsafe-perm=true
+
+      - name: Run tests
+        run: |
+          mvn clean test -fail-at-end
+
+      - name: Checkout gh-pages branch
+        if: always()
+        continue-on-error: true
+        uses: actions/checkout@v2
+        with:
+          ref: gh-pages
+          path: gh-pages
+
+      - name: Collect Allure results
+        if: always()
+        run: |
+          mkdir -p combined-allure-results
+          find . -type d -path "*/target/allure-results" | while read d; do
+            echo "Copying from $d"
+            cp -r "$d"/* combined-allure-results/ || echo "Nothing to copy"
+          done
+
+      - name: Generate Allure report
+        if: always()
+        uses: simple-elf/allure-report-action@master
+        id: allure
+        with:
+          allure_results: combined-allure-results
+          gh_pages: gh-pages
+          allure_report: allure-report
+          allure_history: allure-history
+
+      - name: Deploy Allure report to GitHub Pages
+        if: always()
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          personal_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: allure-history
+          publish_branch: gh-pages
