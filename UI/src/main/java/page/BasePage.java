@@ -26,6 +26,7 @@ public class BasePage<T extends BasePage<T>> {
 
     protected T clickElement(WebElement element){
         wait.until(visibilityOf(element));
+        wait.until(elementToBeClickable(element));
         element.click();
         return (T) this;
     }
