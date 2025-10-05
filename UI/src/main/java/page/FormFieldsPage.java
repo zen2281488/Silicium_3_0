@@ -39,7 +39,7 @@ public class FormFieldsPage extends BasePage<FormFieldsPage> {
     @FindBy(css="#feedbackForm ul li")
     private List<WebElement> automationToolsBullets;
 
-    @FindBy(id="submit-btn")
+    @FindBy(css=".custom_btn.btn_hover")
     private WebElement submitButton;
 
     @Step("Выбрать чекбокс напитка: {value}")
