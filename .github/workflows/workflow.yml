@@ -1,14 +1,9 @@
-name: Java CI with Allure
+name: Java CI with Allure + History
 
 on:
   push:
-    branches: ["*"]
-    paths:
-      - "**"
-      - "!*.md"
-
-permissions:
-  contents: write
+    branches: [ "*" ]
+    paths: [ "**", "!*.md" ]
 
 jobs:
   build:
@@ -16,96 +11,64 @@ jobs:
     environment: dev
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-      - uses: actions/setup-java@v3
+      - name: Set up JDK
+        uses: actions/setup-java@v3
         with:
           java-version: '17'
           distribution: 'corretto'
           cache: maven
 
-      - name: Setup Chrome
-        uses: browser-actions/setup-chrome@v1
-
-      - name: Show Chrome version
-        run: google-chrome --version || chromium --version || true
+      - name: Install Chrome
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y google-chrome-stable
 
       - name: Install Allure CLI
         run: sudo npm install -g allure-commandline --unsafe-perm=true
 
       - name: Run tests
-        run: mvn -B clean test -fail-at-end
+        run: |
+          mvn clean test -fail-at-end \
+            -DDB_USER=${{ secrets.DB_USER }} \
+            -DDB_PASSWORD=${{ secrets.DB_PASSWORD }} \
+            -DAPI_USER=${{ secrets.API_USER }} \
+            -DAPI_PASSWORD=${{ secrets.API_PASSWORD }} \
+            -DBASE_URL=${{ secrets.BASE_URL }}
 
-      - name: Checkout gh-pages branch (history, optional)
+      - name: Checkout gh-pages branch
+        if: always()
         continue-on-error: true
-        uses: actions/checkout@v4
+        uses: actions/checkout@v2
         with:
           ref: gh-pages
           path: gh-pages
-          fetch-depth: 1
-          persist-credentials: false
 
-      - name: Collect Allure results (+ previous history if any)
-        id: collect
+      - name: Collect Allure results
+        if: always()
         run: |
-          set -euo pipefail
           mkdir -p combined-allure-results
-
-          mapfile -t dirs < <(find . -type d -path "*/target/allure-results" -not -path "./gh-pages/*" | sort || true)
-          for d in "${dirs[@]:-}"; do
-            echo ">> Copy from: $d"
-            cp -rn "$d"/* combined-allure-results/ || true
+          find . -type d -path "*/target/allure-results" | while read d; do
+            echo "Copying from $d"
+            cp -r "$d"/* combined-allure-results/ || echo "Nothing to copy"
           done
 
-          if [ -d gh-pages/last-history ]; then
-            mkdir -p combined-allure-results/history
-            cp -rn gh-pages/last-history/* combined-allure-results/history/ || true
-          fi
-
-          echo "== combined-allure-results listing =="
-          ls -la combined-allure-results || true
-
-          if [ -d combined-allure-results ] && [ -n "$(ls -A combined-allure-results || true)" ]; then
-            echo "has_results=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "::warning::No Allure results found (*/target/allure-results is empty or tests never started)."
-            echo "has_results=false" >> "$GITHUB_OUTPUT"
-          fi
-
       - name: Generate Allure report
-        if: steps.collect.outputs.has_results == 'true'
-        uses: simple-elf/allure-report-action@v1.7
+        if: always()
+        uses: simple-elf/allure-report-action@master
+        id: allure
         with:
           allure_results: combined-allure-results
+          gh_pages: gh-pages
           allure_report: allure-report
           allure_history: allure-history
 
-      - name: Persist history snapshot for next run
-        if: steps.collect.outputs.has_results == 'true'
-        run: |
-          rm -rf allure-history/last-history || true
-          mkdir -p allure-history/last-history
-          if [ -d allure-history/history ]; then
-            cp -r allure-history/history/* allure-history/last-history/ || true
-          fi
-
-      - name: Fix permissions
-        if: steps.collect.outputs.has_results == 'true'
-        run: sudo chown -R $USER:$USER allure-history allure-report || true
-
       - name: Deploy Allure report to GitHub Pages
-        if: steps.collect.outputs.has_results == 'true'
+        if: always()
         uses: peaceiris/actions-gh-pages@v3
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          personal_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: allure-history
           publish_branch: gh-pages
-          force_orphan: true
-          keep_files: false
-          enable_jekyll: false
-
-      - name: Fail when no results
-        if: steps.collect.outputs.has_results != 'true'
-        run: |
-          echo "::error::Allure results are empty. Not deploying an empty report."
-          exit 1
