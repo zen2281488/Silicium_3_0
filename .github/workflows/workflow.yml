@@ -24,19 +24,19 @@ jobs:
           distribution: 'corretto'
           cache: maven
 
-      - name: Install Chrome
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y google-chrome-stable || sudo apt-get install -y chromium-browser
+      - name: Setup Chrome
+        uses: browser-actions/setup-chrome@v1
+
+      - name: Show Chrome version
+        run: google-chrome --version || chromium --version || true
 
       - name: Install Allure CLI
         run: sudo npm install -g allure-commandline --unsafe-perm=true
 
       - name: Run tests
-        run: mvn clean test -fail-at-end
+        run: mvn -B clean test -fail-at-end
 
       - name: Checkout gh-pages branch (history, optional)
-        if: always()
         continue-on-error: true
         uses: actions/checkout@v4
         with:
@@ -46,17 +46,34 @@ jobs:
           persist-credentials: false
 
       - name: Collect Allure results (+ previous history if any)
-        if: always()
+        id: collect
         run: |
+          set -euo pipefail
           mkdir -p combined-allure-results
-          find . -type d -path "*/target/allure-results" -print0 | xargs -0 -I{} cp -r {}/* combined-allure-results/ 2>/dev/null || true
+
+          mapfile -t dirs < <(find . -type d -path "*/target/allure-results" -not -path "./gh-pages/*" | sort || true)
+          for d in "${dirs[@]:-}"; do
+            echo ">> Copy from: $d"
+            cp -rn "$d"/* combined-allure-results/ || true
+          done
+
           if [ -d gh-pages/last-history ]; then
             mkdir -p combined-allure-results/history
-            cp -r gh-pages/last-history/* combined-allure-results/history/ || true
+            cp -rn gh-pages/last-history/* combined-allure-results/history/ || true
+          fi
+
+          echo "== combined-allure-results listing =="
+          ls -la combined-allure-results || true
+
+          if [ -d combined-allure-results ] && [ -n "$(ls -A combined-allure-results || true)" ]; then
+            echo "has_results=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "::warning::No Allure results found (*/target/allure-results is empty or tests never started)."
+            echo "has_results=false" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Generate Allure report
-        if: always()
+        if: steps.collect.outputs.has_results == 'true'
         uses: simple-elf/allure-report-action@v1.7
         with:
           allure_results: combined-allure-results
@@ -64,7 +81,7 @@ jobs:
           allure_history: allure-history
 
       - name: Persist history snapshot for next run
-        if: always()
+        if: steps.collect.outputs.has_results == 'true'
         run: |
           rm -rf allure-history/last-history || true
           mkdir -p allure-history/last-history
@@ -73,11 +90,11 @@ jobs:
           fi
 
       - name: Fix permissions
-        if: always()
+        if: steps.collect.outputs.has_results == 'true'
         run: sudo chown -R $USER:$USER allure-history allure-report || true
 
       - name: Deploy Allure report to GitHub Pages
-        if: always()
+        if: steps.collect.outputs.has_results == 'true'
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
@@ -86,3 +103,9 @@ jobs:
           force_orphan: true
           keep_files: false
           enable_jekyll: false
+
+      - name: Fail when no results
+        if: steps.collect.outputs.has_results != 'true'
+        run: |
+          echo "::error::Allure results are empty. Not deploying an empty report."
+          exit 1
