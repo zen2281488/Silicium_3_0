@@ -64,7 +64,6 @@ jobs:
             chmod -R u+w allure-history/.git || true
             rm -rf allure-history/.git
           fi
-
       - name: Deploy Allure report to GitHub Pages
         if: always()
         uses: peaceiris/actions-gh-pages@v3
