@@ -22,6 +22,10 @@ public class WebDriverExtension implements ParameterResolver, AfterEachCallback 
         return store.getOrComputeIfAbsent("driver", key -> {
             ChromeOptions options = new ChromeOptions();
             if(getBoolProperty("headlessMode")) options.addArguments("--headless=new");
+            options
+                    .addArguments("--window-size=1920,1080")
+                    .addArguments("--disable-dev-shm-usage")
+                    .addArguments("--no-sandbox");
             return new ChromeDriver(options);
         }, WebDriver.class);
     }
