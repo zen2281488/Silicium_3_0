@@ -26,7 +26,9 @@ public class BasePage<T extends BasePage<T>> {
 
     protected T clickElement(WebElement element){
         wait.until(visibilityOf(element));
-        element.click();
+        ((org.openqa.selenium.JavascriptExecutor) browser)
+                .executeScript("arguments[0].scrollIntoView({block:'center', inline:'nearest'});", element);
+        wait.until(elementToBeClickable(element)).click();
         return (T) this;
     }
 
