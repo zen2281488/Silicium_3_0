@@ -2,8 +2,10 @@ name: Java CI with Allure
 
 on:
   push:
-    branches: [ "*" ]
-    paths: [ "**", "!*.md" ]
+    branches: ["*"]
+    paths:
+      - "**"
+      - "!*.md"
 
 permissions:
   contents: write
@@ -25,7 +27,7 @@ jobs:
       - name: Install Chrome
         run: |
           sudo apt-get update
-          sudo apt-get install -y google-chrome-stable
+          sudo apt-get install -y google-chrome-stable || sudo apt-get install -y chromium-browser
 
       - name: Install Allure CLI
         run: sudo npm install -g allure-commandline --unsafe-perm=true
@@ -33,8 +35,9 @@ jobs:
       - name: Run tests
         run: mvn clean test -fail-at-end
 
-      - name: Checkout gh-pages branch (history)
+      - name: Checkout gh-pages branch (history, optional)
         if: always()
+        continue-on-error: true
         uses: actions/checkout@v4
         with:
           ref: gh-pages
@@ -42,28 +45,37 @@ jobs:
           fetch-depth: 1
           persist-credentials: false
 
-      - name: Collect Allure results
+      - name: Collect Allure results (+ previous history if any)
         if: always()
         run: |
           mkdir -p combined-allure-results
           find . -type d -path "*/target/allure-results" -print0 | xargs -0 -I{} cp -r {}/* combined-allure-results/ 2>/dev/null || true
+          if [ -d gh-pages/last-history ]; then
+            mkdir -p combined-allure-results/history
+            cp -r gh-pages/last-history/* combined-allure-results/history/ || true
+          fi
 
       - name: Generate Allure report
         if: always()
         uses: simple-elf/allure-report-action@v1.7
         with:
           allure_results: combined-allure-results
-          gh_pages: gh-pages            # тут лежит старая история
           allure_report: allure-report
           allure_history: allure-history
 
-      - name: Ensure no nested .git in publish dir
+      - name: Persist history snapshot for next run
         if: always()
         run: |
-          if [ -d allure-history/.git ]; then
-            chmod -R u+w allure-history/.git || true
-            rm -rf allure-history/.git
+          rm -rf allure-history/last-history || true
+          mkdir -p allure-history/last-history
+          if [ -d allure-history/history ]; then
+            cp -r allure-history/history/* allure-history/last-history/ || true
           fi
+
+      - name: Fix permissions
+        if: always()
+        run: sudo chown -R $USER:$USER allure-history allure-report || true
+
       - name: Deploy Allure report to GitHub Pages
         if: always()
         uses: peaceiris/actions-gh-pages@v3
