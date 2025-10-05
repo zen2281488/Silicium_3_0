@@ -23,7 +23,7 @@ public class WebDriverExtension implements ParameterResolver, AfterEachCallback 
             ChromeOptions options = new ChromeOptions();
             if (getBoolProperty("headlessMode")) options.addArguments("--headless=new");
             options.addArguments(
-                    "--window-size=1920,1080",
+                    "--window-size=1920,1400",
                     "--force-device-scale-factor=1"
             );
             return new ChromeDriver(options);
