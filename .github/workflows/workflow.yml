@@ -31,12 +31,7 @@ jobs:
 
       - name: Run tests
         run: |
-          mvn clean test -fail-at-end \
-            -DDB_USER=${{ secrets.DB_USER }} \
-            -DDB_PASSWORD=${{ secrets.DB_PASSWORD }} \
-            -DAPI_USER=${{ secrets.API_USER }} \
-            -DAPI_PASSWORD=${{ secrets.API_PASSWORD }} \
-            -DBASE_URL=${{ secrets.BASE_URL }}
+          mvn clean test -fail-at-end
 
       - name: Checkout gh-pages branch
         if: always()
