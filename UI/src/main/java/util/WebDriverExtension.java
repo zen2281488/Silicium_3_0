@@ -21,11 +21,11 @@ public class WebDriverExtension implements ParameterResolver, AfterEachCallback 
         ExtensionContext.Store store = ec.getStore(NAMESPACE);
         return store.getOrComputeIfAbsent("driver", key -> {
             ChromeOptions options = new ChromeOptions();
-            if(getBoolProperty("headlessMode")) options.addArguments("--headless=new");
-            options
-                    .addArguments("--window-size=1920,1080")
-                    .addArguments("--disable-dev-shm-usage")
-                    .addArguments("--no-sandbox");
+            if (getBoolProperty("headlessMode")) options.addArguments("--headless=new");
+            options.addArguments(
+                    "--window-size=1920,1080",
+                    "--force-device-scale-factor=1"
+            );
             return new ChromeDriver(options);
         }, WebDriver.class);
     }
