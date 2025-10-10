@@ -61,7 +61,7 @@ public class FormFieldsTest extends BaseTest {
     }
 
     @Feature("Form Fields")
-    @Description("Тестирование всплывания пузы формы Form Fields при пропуске обязательного поля Name и полном заполнении других полей.")
+    @Description("Тестирование блокирования функционала и подсветки нативной валидаци поля Nameи при его пропуске и полном заполнении других полей.")
     @Severity(value = SeverityLevel.CRITICAL)
     @Test
     @Issue("PracticeAutomation-UI-FormFieldsFillNameN")
