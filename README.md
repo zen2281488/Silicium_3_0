@@ -59,6 +59,7 @@ mvn -pl UI allure:report && mvn -pl UI allure:serve
 # или, при установленном allure CLI
 allure serve UI/target/allure-results
 ```
+![img.png](img.png)
 GitHub Actions генерирует отчёт в ветке `gh-pages` ([ознакомится с примером отчета можно по этому адресу](https://zen2281488.github.io/Silicium_3_0)) и сохраняет историю между прогонами.
 
 ## Список тест кейсов
