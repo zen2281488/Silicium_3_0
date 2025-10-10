@@ -15,7 +15,7 @@ public class FormFieldsPage extends BasePage<FormFieldsPage> {
         super(browser);
     }
 
-    @FindBy(id = "name-input")
+    @FindBy(xpath = "//*[@id=\"name-input\"]")
     private WebElement nameInput;
 
     @FindBy(css = "input[type=\"password\"]")
