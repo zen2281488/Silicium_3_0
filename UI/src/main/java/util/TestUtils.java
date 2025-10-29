@@ -25,7 +25,6 @@ public class TestUtils {
                 .count();
     }
 
-
     public static long getRandomPostCodeNumber() {
         return ThreadLocalRandom.current()
                 .nextLong(1_000_000_000L, 10_000_000_000L);
@@ -48,11 +47,13 @@ public class TestUtils {
         }
         return -1;
     }
+
     public static String text(List<WebElement> tds, int idx) {
         return (idx >= 0 && idx < tds.size()) ? tds.get(idx).getText().trim() : "";
     }
-    public static CustomerRow parseCustomerRow(WebElement customersTable, String firstName, String lastName) {
-        return parseCustomerRows(customersTable).stream()
+
+    public static CustomerRow parseCustomerRow(List<CustomerRow> rows, String firstName, String lastName) {
+        return rows.stream()
                 .filter(r -> firstName.equals(r.getFirstName()) && lastName.equals(r.getLastName()))
                 .findFirst()
                 .orElseThrow(() -> new NoSuchElementException("Не найден клиент: " + firstName + " " + lastName));
