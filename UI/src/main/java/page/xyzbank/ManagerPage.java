@@ -103,9 +103,9 @@ public class ManagerPage extends BasePage<ManagerPage> {
         return this;
     }
 
-    @Step("Проверить, что клиент '{text}' есть в селекторе Customer")
-    public boolean isCustomerPresent(String text) {
-        return isStrPresent(customerSelector, text);
+    @Step("Проверить, что клиент '{text}' отсутствует в селекторе Customer")
+    public boolean isCustomerNotPresent(String text) {
+        return !isStrPresent(customerSelector, text);
     }
 
     @Step("Отсортировать First Name по возрастанию")

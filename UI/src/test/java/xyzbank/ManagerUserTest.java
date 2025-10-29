@@ -82,7 +82,7 @@ public class ManagerUserTest extends BaseTest {
         managerPage
                 .clickCustomersButton()
                 .deleteCustomer("Neville", "Longbottom").clickOpenAccountButton();
-        Assertions.assertTrue(!managerPage.isCustomerPresent("Neville Longbottom"), "Клиент не был удален");
+        Assertions.assertTrue(managerPage.isCustomerNotPresent("Neville Longbottom"), "Клиент не был удален");
 
     }
 }
