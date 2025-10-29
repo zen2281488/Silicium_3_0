@@ -4,9 +4,12 @@ import model.xyz.CustomerRow;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.stream.IntStream;
 
 // этот класс содержит методы для выполнения 7 пункта первой части тестового задания
 public class TestUtils {
@@ -92,5 +95,27 @@ public class TestUtils {
                             .deleteButton(delBtn)
                             .build();
                 }).toList();
+    }
+
+    public static double averageFirstNameLen(List<CustomerRow> rows) {
+        return rows.stream()
+                .map(CustomerRow::getFirstName)
+                .map(String::trim)
+                .mapToInt(String::length)
+                .average()
+                .orElse(0.0);
+    }
+
+    public static Optional<CustomerRow> closestByFirstNameLenToMean(List<CustomerRow> rows) {
+        if (rows == null || rows.isEmpty()) return Optional.empty();
+
+        double avg = averageFirstNameLen(rows);
+        int idx = IntStream.range(0, rows.size())
+                .boxed()
+                .min(Comparator.comparingDouble(i ->
+                        Math.abs(rows.get(i).getFirstName().trim().length() - avg)))
+                .orElse(0);
+
+        return Optional.of(rows.get(idx));
     }
 }

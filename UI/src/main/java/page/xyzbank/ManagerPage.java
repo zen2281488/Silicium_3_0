@@ -178,5 +178,10 @@ public class ManagerPage extends BasePage<ManagerPage> {
         return this;
     }
 
+    @Step("Найти клиента с длиной First Name, ближайшей к среднему")
+    public CustomerRow findCustomerByFirstNameLenClosestToMean() {
+        return TestUtils.closestByFirstNameLenToMean(customerRows())
+                .orElseThrow(() -> new NoSuchElementException("Таблица Customers пуста"));
+    }
 
 }

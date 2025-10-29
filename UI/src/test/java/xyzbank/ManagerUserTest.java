@@ -80,9 +80,12 @@ public class ManagerUserTest extends BaseTest {
         driver.get(getProperty("xyzBaseUrl") + "manager");
 
         managerPage
-                .clickCustomersButton()
-                .deleteCustomer("Neville", "Longbottom").clickOpenAccountButton();
-        Assertions.assertTrue(managerPage.isCustomerNotPresent("Neville Longbottom"), "Клиент не был удален");
+                .clickCustomersButton();
+        var customer = managerPage.findCustomerByFirstNameLenClosestToMean();
+        managerPage
+                .deleteCustomer(customer.getFirstName(), customer.getLastName())
+                .clickOpenAccountButton();
+        Assertions.assertTrue(managerPage.isCustomerNotPresent(customer.getFirstName()+" "+customer.getLastName()), "Клиент не был удален");
 
     }
 }
