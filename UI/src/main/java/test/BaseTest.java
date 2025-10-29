@@ -1,4 +1,4 @@
-package anui;
+package test;
 
 import io.qameta.allure.Step;
 import org.junit.jupiter.api.BeforeEach;
