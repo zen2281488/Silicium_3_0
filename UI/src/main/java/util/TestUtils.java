@@ -62,16 +62,15 @@ public class TestUtils {
                 .orElseThrow(() -> new NoSuchElementException("Не найден клиент: " + firstName + " " + lastName));
     }
 
-    public static List<CustomerRow> parseCustomerRows(WebElement customersTable) {
+    public static List<CustomerRow> parseCustomerRows(List<WebElement> tableHeaders,List<WebElement> tableRows) {
 
-        List<WebElement> headers = customersTable.findElements(By.cssSelector("thead tr td"));
-        int fnIdx = TestUtils.indexOf(headers, "First Name");
-        int lnIdx = TestUtils.indexOf(headers, "Last Name");
-        int pcIdx = TestUtils.indexOf(headers, "Post Code");
-        int accIdx = TestUtils.indexOf(headers, "Account Number");
-        int delIdx = TestUtils.indexOf(headers, "Delete Customer");
+        int fnIdx = TestUtils.indexOf(tableHeaders, "First Name");
+        int lnIdx = TestUtils.indexOf(tableHeaders, "Last Name");
+        int pcIdx = TestUtils.indexOf(tableHeaders, "Post Code");
+        int accIdx = TestUtils.indexOf(tableHeaders, "Account Number");
+        int delIdx = TestUtils.indexOf(tableHeaders, "Delete Customer");
 
-        return customersTable.findElements(By.cssSelector("tbody tr"))
+        return tableRows
                 .stream()
                 .map(tr -> {
                     List<WebElement> tds = tr.findElements(By.cssSelector("td"));

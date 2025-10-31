@@ -8,7 +8,6 @@ import io.qameta.allure.Severity;
 import io.qameta.allure.SeverityLevel;
 import io.qameta.allure.Issue;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -16,6 +15,7 @@ import page.xyzbank.ManagerPage;
 import test.BaseTest;
 import util.TestUtils;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static util.ConfProperties.getProperty;
 
 @Epic("XYZ Bank")
@@ -51,13 +51,17 @@ public class ManagerUserTest extends BaseTest {
                 .fillPostCodeInput(postCode)
                 .clickAddCustomerSubmitButton();
 
-        Assertions.assertTrue(
-                managerPage.getAlertText().contains("Customer added successfully with customer id :"), "Некорректный текст alert");
+        assertTrue(
+                managerPage
+                        .getAlertText()
+                        .contains("Customer added successfully with customer id :"), "Некорректный текст alert");
 
         managerPage.clickOpenAccountButton()
                 .selectCustomer(firstName + " " + lastName)
                 .clickCustomersButton();
-        Assertions.assertTrue(managerPage.isCustomerExist(firstName, lastName),"Пользователь "+firstName+" "+lastName+" не был найден.");
+        assertTrue(managerPage
+                .isCustomerExist(firstName, lastName)
+                ,"Пользователь "+firstName+" "+lastName+" не был найден.");
     }
 
     @Feature("Manager")
@@ -68,9 +72,13 @@ public class ManagerUserTest extends BaseTest {
     @DisplayName("T-005")
     public void sortTablePTest() {
         managerPage.clickCustomersButton().sortFirstNameAsc();
-        Assertions.assertTrue(managerPage.isFirstNameSortedAsc(), "Некорректно работает asc сортировка по First Name клиентов в таблице клиентов");
+        assertTrue(managerPage
+                .isFirstNameSortedAsc()
+                , "Некорректно работает asc сортировка по First Name клиентов в таблице клиентов");
         managerPage.clickCustomersButton().sortFirstNameDesc();
-        Assertions.assertTrue(managerPage.isFirstNameSortedDesc(), "Некорректно работает desc сортировка по First Name клиентов в таблице клиентов");
+        assertTrue(managerPage
+                .isFirstNameSortedDesc()
+                , "Некорректно работает desc сортировка по First Name клиентов в таблице клиентов");
     }
 
     @Feature("Manager")
@@ -80,12 +88,13 @@ public class ManagerUserTest extends BaseTest {
     @Issue("XYZBank-UI-DeleteCustomerUserP")
     @DisplayName("T-006")
     public void deleteCustomerPTest() {
-        managerPage
-                .clickCustomersButton();
+        managerPage.clickCustomersButton();
         var customer = managerPage.findCustomerByFirstNameLenClosestToMean();
         managerPage
                 .deleteCustomer(customer.getFirstName(), customer.getLastName())
                 .clickOpenAccountButton();
-        Assertions.assertTrue(managerPage.isCustomerNotPresent(customer.getFirstName()+" "+customer.getLastName()), "Клиент не был удален");
+        assertTrue(managerPage
+                .isCustomerNotPresent(customer.getFirstName()+" "+customer.getLastName())
+                , "Клиент не был удален");
     }
 }

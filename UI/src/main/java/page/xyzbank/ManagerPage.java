@@ -2,13 +2,18 @@ package page.xyzbank;
 
 import io.qameta.allure.Step;
 import model.xyz.CustomerRow;
+import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
 import page.BasePage;
 import util.TestUtils;
 
-import java.util.*;
+
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.NoSuchElementException;
 
 import static org.openqa.selenium.support.ui.ExpectedConditions.elementToBeClickable;
 import static org.openqa.selenium.support.ui.ExpectedConditions.visibilityOf;
@@ -43,6 +48,10 @@ public class ManagerPage extends BasePage<ManagerPage> {
     private WebElement currencySelector;
     @FindBy(css = "table")
     private WebElement customersTable;
+    @FindBy(css = "thead tr td")
+    private List<WebElement> tableHeaders;
+    @FindBy(css = "tbody tr")
+    private List<WebElement> tableRows;
     @FindBy(css = "thead tr td:nth-child(1) a")
     private WebElement firstNameHeaderLink;
     @FindBy(css = "thead tr td:nth-child(2) a")
@@ -158,7 +167,7 @@ public class ManagerPage extends BasePage<ManagerPage> {
     @Step("Прочитать строки таблицы Customers")
     public List<CustomerRow> customerRows() {
         wait.until(visibilityOf(customersTable));
-        return TestUtils.parseCustomerRows(customersTable);
+        return TestUtils.parseCustomerRows(tableHeaders,tableRows);
     }
 
     @Step("Найти строку клиента: {firstName} {lastName}")
