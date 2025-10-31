@@ -141,9 +141,9 @@ public class ManagerPage extends BasePage<ManagerPage> {
 
     private boolean isColumnSorted(int colIndex, boolean asc) {
         var values = readColumn(colIndex);
-        var expected = new java.util.ArrayList<>(values);
+        var expected = new ArrayList<>(values);
         expected.sort(String::compareToIgnoreCase);
-        if (!asc) java.util.Collections.reverse(expected);
+        if (!asc) Collections.reverse(expected);
         return values.equals(expected);
     }
 
@@ -166,6 +166,15 @@ public class ManagerPage extends BasePage<ManagerPage> {
         return TestUtils.parseCustomerRow(customerRows(), firstName, lastName);
     }
 
+    @Step("Убедится что клиент {firstName} {lastName} существует")
+    public boolean isCustomerExist(String firstName, String lastName) {
+        try {
+            TestUtils.parseCustomerRow(customerRows(), firstName, lastName);
+            return true;
+        } catch (NoSuchElementException e) {
+            return false;
+        }
+    }
     @Step("Удалить клиента: {firstName} {lastName}")
     public ManagerPage deleteCustomer(String firstName, String lastName) {
         var row = findCustomerRow(firstName, lastName);

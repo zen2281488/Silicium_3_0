@@ -28,6 +28,12 @@ public class ManagerUserTest extends BaseTest {
         managerPage = new ManagerPage(driver);
     }
 
+    @BeforeEach
+    @Step("Переход на страницу")
+    public void setup(){
+        driver.get(getProperty("xyzBaseUrl") + "manager");
+    }
+
     @Feature("Manager")
     @Description("Тестирование работоспособности базовой функциональности создания нового клиента банка")
     @Severity(value = SeverityLevel.CRITICAL)
@@ -35,7 +41,6 @@ public class ManagerUserTest extends BaseTest {
     @Issue("XYZBank-UI-CreateCustomerUserP")
     @DisplayName("T-004")
     public void createCustomerUserPTest() {
-        driver.get(getProperty("xyzBaseUrl") + "manager");
         var postCode = TestUtils.getRandomPostCodeNumber();
         var firstName = TestUtils.nameFromPostCode(postCode);
         var lastName = "Testovlev";
@@ -51,8 +56,8 @@ public class ManagerUserTest extends BaseTest {
 
         managerPage.clickOpenAccountButton()
                 .selectCustomer(firstName + " " + lastName)
-                .clickCustomersButton()
-                .findCustomerRow(firstName, lastName);
+                .clickCustomersButton();
+        Assertions.assertTrue(managerPage.isCustomerExist(firstName, lastName),"Пользователь "+firstName+" "+lastName+" не был найден.");
     }
 
     @Feature("Manager")
@@ -62,12 +67,10 @@ public class ManagerUserTest extends BaseTest {
     @Issue("XYZBank-UI-SortTableP")
     @DisplayName("T-005")
     public void sortTablePTest() {
-        driver.get(getProperty("xyzBaseUrl") + "manager");
         managerPage.clickCustomersButton().sortFirstNameAsc();
         Assertions.assertTrue(managerPage.isFirstNameSortedAsc(), "Некорректно работает asc сортировка по First Name клиентов в таблице клиентов");
         managerPage.clickCustomersButton().sortFirstNameDesc();
         Assertions.assertTrue(managerPage.isFirstNameSortedDesc(), "Некорректно работает desc сортировка по First Name клиентов в таблице клиентов");
-
     }
 
     @Feature("Manager")
@@ -77,8 +80,6 @@ public class ManagerUserTest extends BaseTest {
     @Issue("XYZBank-UI-DeleteCustomerUserP")
     @DisplayName("T-006")
     public void deleteCustomerPTest() {
-        driver.get(getProperty("xyzBaseUrl") + "manager");
-
         managerPage
                 .clickCustomersButton();
         var customer = managerPage.findCustomerByFirstNameLenClosestToMean();
@@ -86,6 +87,5 @@ public class ManagerUserTest extends BaseTest {
                 .deleteCustomer(customer.getFirstName(), customer.getLastName())
                 .clickOpenAccountButton();
         Assertions.assertTrue(managerPage.isCustomerNotPresent(customer.getFirstName()+" "+customer.getLastName()), "Клиент не был удален");
-
     }
 }
