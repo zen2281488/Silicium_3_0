@@ -1,21 +1,23 @@
 package anui;
 
+import test.BaseTest;
 import io.qameta.allure.Description;
+import io.qameta.allure.Epic;
 import io.qameta.allure.Feature;
-import io.qameta.allure.Issue;
 import io.qameta.allure.Step;
 import io.qameta.allure.Severity;
 import io.qameta.allure.SeverityLevel;
-
+import io.qameta.allure.Issue;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import page.FormFieldsPage;
+import page.anui.FormFieldsPage;
 
 import static util.ConfProperties.getProperty;
 
+@Epic("Automate Now")
 public class FormFieldsTest extends BaseTest {
     private FormFieldsPage formFieldsPage;
 
@@ -32,7 +34,7 @@ public class FormFieldsTest extends BaseTest {
     @Issue("PracticeAutomation-UI-FormFieldsSmoke")
     @DisplayName("T-001")
     public void fillFormPTest() {
-        driver.get(getProperty("baseUrl")+"form-fields/");
+        driver.get(getProperty("practiceAutomationBaseUrl")+"form-fields/");
         formFieldsPage
                 .fillNameInput("Testovlev Test Testovich")
                 .fillPasswordInput("qwertyTest123")
@@ -53,7 +55,7 @@ public class FormFieldsTest extends BaseTest {
     @Issue("PracticeAutomation-UI-FormFieldsFillNameP")
     @DisplayName("T-002")
     public void fillNamePTest() {
-        driver.get(getProperty("baseUrl")+"form-fields/");
+        driver.get(getProperty("practiceAutomationBaseUrl")+"form-fields/");
         formFieldsPage
                 .fillNameInput("Testovlev Test Testovich")
                 .clickSubmitButton();
@@ -67,7 +69,7 @@ public class FormFieldsTest extends BaseTest {
     @Issue("PracticeAutomation-UI-FormFieldsFillNameN")
     @DisplayName("T-003")
     public void fillNameNTest() {
-        driver.get(getProperty("baseUrl")+"form-fields/");
+        driver.get(getProperty("practiceAutomationBaseUrl")+"form-fields/");
         formFieldsPage
                 .fillPasswordInput("qwertyTest123")
                 .clickDrinksCheckbox("Milk")

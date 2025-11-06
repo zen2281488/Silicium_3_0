@@ -36,7 +36,12 @@ public class BasePage<T extends BasePage<T>> {
         element.sendKeys(Integer.toString(num));
         return (T) this;
     }
-
+    protected T fillElement(WebElement element,long num){
+        wait.until(visibilityOf(element));
+        element.clear();
+        element.sendKeys(String.valueOf(num));
+        return (T) this;
+    }
     protected T fillElement(WebElement element,String string){
         wait.until(visibilityOf(element));
         element.clear();
@@ -60,5 +65,21 @@ public class BasePage<T extends BasePage<T>> {
     }
     protected Alert waitAlert() {
         return wait.until(alertIsPresent());
+    }
+
+    protected String acceptAlertAndGetText() {
+        Alert a = waitAlert();
+        String text = a.getText();
+        a.accept();
+        return text;
+    }
+
+    protected boolean isStrPresent(WebElement element,String text) {
+        wait.until(visibilityOf(element));
+        Select sel = new Select(element);
+        return sel.getOptions().stream()
+                .map(WebElement::getText)
+                .map(String::trim)
+                .anyMatch(opt -> opt.equals(text));
     }
 }
