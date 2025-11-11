@@ -30,5 +30,32 @@ public class TestData {
                 .build();
     }
 
+    public Addition patchedAddition(Addition original) {
+        if (original == null) {
+            return null;
+        }
+
+        return Addition.builder()
+                .id(original.getId())
+                .additionalInfo(original.getAdditionalInfo() + " (обновлено)")
+                .additionalNumber(original.getAdditionalNumber())
+                .build();
+    }
+
+    public Item patchedEntity(Item original) {
+        if (original == null) {
+            return null;
+        }
+
+        Addition patchedAddition = patchedAddition(original.getAddition());
+
+        return Item.builder()
+                .id(original.getId())
+                .title(original.getTitle() + " (обновлено)")
+                .verified(original.getVerified())
+                .importantNumbers(original.getImportantNumbers())
+                .addition(patchedAddition)
+                .build();
+    }
 }
 

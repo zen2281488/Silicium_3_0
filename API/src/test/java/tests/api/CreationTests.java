@@ -4,6 +4,9 @@ import io.qameta.allure.*;
 import models.api.Item;
 import org.junit.jupiter.api.*;
 import utils.RestAssuredUtils;
+import utils.data.api.TestData;
+
+import java.util.List;
 
 @Epic("CRUD")
 public class CreationTests extends BaseTest {
@@ -79,4 +82,139 @@ public class CreationTests extends BaseTest {
         itemService.deleteEntity(dbItem);
 
     }
+
+    @Feature("Получение всех сущностей")
+    @Test
+    @DisplayName("T-010")
+    @Severity(SeverityLevel.CRITICAL)
+    @Description("Тестирование получения всех сущностей")
+    @Issue("API-getAll-item-p")
+    public void getAllEntityPTest() {
+        var firstAnswerApiItem = RestAssuredUtils.createItem(newLocalItem);
+        var firstEntityId = Integer.parseInt(firstAnswerApiItem);
+        var secondAnswerApiItem = RestAssuredUtils.createItem(newLocalItem);
+        var secondEntityId = Integer.parseInt(secondAnswerApiItem);
+
+        Assertions.assertNotNull(itemService.findEntity(firstEntityId));
+        Assertions.assertNotNull(itemService.findEntity(secondEntityId));
+
+        List<models.api.Item> itemsFromApi = RestAssuredUtils.getAll();
+        List<models.db.Item>  itemsFromDb  = itemService.findAllEntities();
+
+        List<Integer> createdIds = List.of(firstEntityId, secondEntityId);
+
+        createdIds.forEach(id -> {
+            models.db.Item dbItem = itemsFromDb.stream()
+                    .filter(i -> i.getId().equals(id))
+                    .findFirst()
+                    .orElseThrow(() -> new AssertionError(
+                            "В БД нет сущности с id = " + id
+                    ));
+
+            models.api.Item apiItem = itemsFromApi.stream()
+                    .filter(i -> i.getId().equals(id))
+                    .findFirst()
+                    .orElseThrow(() -> new AssertionError(
+                            "В ответе API нет сущности с id = " + id
+                    ));
+
+            Assertions.assertAll(
+                    () -> Assertions.assertEquals(dbItem.getId(), apiItem.getId(), "id"),
+                    () -> Assertions.assertEquals(dbItem.getTitle(), apiItem.getTitle(), "title"),
+                    () -> Assertions.assertEquals(dbItem.getVerified(), apiItem.getVerified(), "verified"),
+                    () -> Assertions.assertNotNull(dbItem.getAddition(), "addition в БД не должен быть null"),
+                    () -> Assertions.assertNotNull(apiItem.getAddition(), "addition в API не должен быть null"),
+                    () -> Assertions.assertEquals(
+                            dbItem.getAddition().getAdditionalInfo(),
+                            apiItem.getAddition().getAdditionalInfo(),
+                            "additionalInfo"
+                    ),
+                    () -> Assertions.assertEquals(
+                            dbItem.getAddition().getAdditionalNumber(),
+                            apiItem.getAddition().getAdditionalNumber(),
+                            "additionalNumber"
+                    )
+            );
+        });
+
+        itemService.deleteEntity(itemService.findEntity(firstEntityId));
+        itemService.deleteEntity(itemService.findEntity(secondEntityId));
+    }
+
+    @Feature("Обновление сущности")
+    @Test
+    @DisplayName("T-011")
+    @Severity(SeverityLevel.CRITICAL)
+    @Description("Тестирование обновления сущности и её дополнений")
+    @Issue("API-patch-item-p")
+    public void patchEntityPTest() {
+        var answerApiItem = RestAssuredUtils.createItem(newLocalItem);
+        var entityId = Integer.parseInt(answerApiItem);
+
+        Assertions.assertNotNull(
+                itemService.findEntity(entityId),
+                "Сущность не создалась в БД"
+        );
+
+        Item updatedItem = TestData.patchedEntity(newLocalItem);
+
+        RestAssuredUtils.patchItem(entityId, updatedItem);
+
+        var patchedDbItem = itemService.findEntity(entityId);
+
+        Assertions.assertAll(
+                () -> Assertions.assertNotNull(patchedDbItem, "После PATCH сущность отсутствует в БД"),
+                () -> Assertions.assertNotNull(patchedDbItem.getAddition(), "После PATCH addition в БД null"),
+                () -> Assertions.assertEquals(entityId, patchedDbItem.getId(), "id"),
+                () -> Assertions.assertEquals(
+                        updatedItem.getTitle(),
+                        patchedDbItem.getTitle(),
+                        "title"
+                ),
+                () -> Assertions.assertEquals(
+                        updatedItem.getVerified(),
+                        patchedDbItem.getVerified(),
+                        "verified"
+                ),
+                () -> Assertions.assertEquals(
+                        updatedItem.getAddition().getAdditionalInfo(),
+                        patchedDbItem.getAddition().getAdditionalInfo(),
+                        "additionalInfo"
+                ),
+                () -> Assertions.assertEquals(
+                        updatedItem.getAddition().getAdditionalNumber(),
+                        patchedDbItem.getAddition().getAdditionalNumber(),
+                        "additionalNumber"
+                )
+        );
+
+        Item apiAfterPatch = RestAssuredUtils.idGetItem(entityId);
+
+        Assertions.assertAll(
+                () -> Assertions.assertEquals(
+                        updatedItem.getTitle(),
+                        apiAfterPatch.getTitle(),
+                        "API title"
+                ),
+                () -> Assertions.assertEquals(
+                        updatedItem.getVerified(),
+                        apiAfterPatch.getVerified(),
+                        "API verified"
+                ),
+                () -> Assertions.assertEquals(
+                        updatedItem.getAddition().getAdditionalInfo(),
+                        apiAfterPatch.getAddition().getAdditionalInfo(),
+                        "API additionalInfo"
+                ),
+                () -> Assertions.assertEquals(
+                        updatedItem.getAddition().getAdditionalNumber(),
+                        apiAfterPatch.getAddition().getAdditionalNumber(),
+                        "API additionalNumber"
+                )
+        );
+
+        itemService.deleteEntity(patchedDbItem);
+    }
+
+
 }

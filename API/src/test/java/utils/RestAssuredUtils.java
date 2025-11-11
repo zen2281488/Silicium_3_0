@@ -8,6 +8,8 @@ import io.restassured.specification.RequestSpecification;
 import lombok.experimental.UtilityClass;
 import models.api.Item;
 
+import java.util.List;
+
 
 @UtilityClass
 public class RestAssuredUtils {
@@ -57,16 +59,29 @@ public class RestAssuredUtils {
                 .as(Item.class);
     }
 
-    @Step("Получение сущности")
-    public Item getAll() {
+    @Step("Получение списка сущностей")
+    public static List<Item> getAll() {
         return getRestAssuredSpecification()
                 .when()
-                .get(RestAssured.baseURI + "get/")
+                .get(RestAssured.baseURI + "getAll")
                 .then()
                 .assertThat()
                 .statusCode(200)
                 .contentType(ContentType.JSON)
                 .extract()
-                .as(Item.class);
+                .jsonPath()
+                .getList("entity", Item.class);
+    }
+
+
+    @Step("Обновление сущности")
+    public static void patchItem(int id, Item updatedItem) {
+        getRestAssuredSpecification()
+                .body(updatedItem)
+                .when()
+                .patch(RestAssured.baseURI + "patch/" + id)
+                .then()
+                .assertThat()
+                .statusCode(204);
     }
 }
