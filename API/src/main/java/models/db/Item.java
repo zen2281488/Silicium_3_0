@@ -26,7 +26,10 @@ public class Item {
     @Column(name = "number")
     private List<Integer> importantNumbers;
 
-    @OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToOne(
+            fetch = FetchType.EAGER,
+            cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.DETACH}
+    )
     @JoinColumn(name = "addition_id")
     private Addition addition;
 
