@@ -18,8 +18,8 @@
         <property name="show_sql">true</property>
         <property name="format_sql">true</property>
 
-        <mapping class="models.db.Addition"/>
-        <mapping class="models.db.Item"/>
+        <mapping class="models.db.AdditionDb"/>
+        <mapping class="models.db.ItemDb"/>
 
     </session-factory>
 </hibernate-configuration>

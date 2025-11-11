@@ -7,8 +7,6 @@ import org.junit.jupiter.api.BeforeEach;
 import services.ItemService;
 import io.restassured.RestAssured;
 import io.restassured.parsing.Parser;
-import utils.data.api.TestData;
-
 
 public abstract class BaseTest {
 
@@ -23,9 +21,6 @@ public abstract class BaseTest {
 
     @BeforeEach
     public void beforeEach() {
-        newLocalAddition = TestData.addition();
-        newLocalItem = TestData.entity(newLocalAddition);
-
         itemService = new ItemService();
     }
 }

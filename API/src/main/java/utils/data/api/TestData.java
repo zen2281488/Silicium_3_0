@@ -3,30 +3,29 @@ package utils.data.api;
 import lombok.experimental.UtilityClass;
 import models.api.Addition;
 import models.api.Item;
-import utils.properties.ConfProperties;
 
 import java.util.List;
 
 @UtilityClass
 public class TestData {
 
-    public Item entity(Addition newLocalAddition) {
+    public Item entity(Addition newLocalAddition, String title, Boolean verified, Integer important_number_1, Integer important_number_2,Integer important_number_3) {
         return Item.builder()
-                .title(ConfProperties.string("title"))
-                .verified(ConfProperties.bool("verified"))
+                .title(title)
+                .verified(verified)
                 .importantNumbers(List.of(
-                        ConfProperties.integer("important_number_1"),
-                        ConfProperties.integer("important_number_2"),
-                        ConfProperties.integer("important_number_3")
+                        important_number_1,
+                        important_number_2,
+                        important_number_3
                 ))
                 .addition(newLocalAddition)
                 .build();
     }
 
-    public Addition addition() {
+    public Addition addition(String additional_info,Integer additional_number) {
         return Addition.builder()
-                .additionalInfo(ConfProperties.string("additional_info"))
-                .additionalNumber(ConfProperties.integer("additional_number"))
+                .additionalInfo(additional_info)
+                .additionalNumber(additional_number)
                 .build();
     }
 

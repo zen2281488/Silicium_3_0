@@ -1,11 +1,6 @@
 package models.db;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-import jakarta.persistence.OneToOne;
-import jakarta.persistence.FetchType;
+import jakarta.persistence.*;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -14,7 +9,7 @@ import lombok.Setter;
 @Setter
 @Entity
 @Table(name = "additions")
-public class Addition {
+public class AdditionDb {
 
     @Id
     @Column(name = "id", nullable = false)
@@ -27,5 +22,5 @@ public class Addition {
     private Integer additionalNumber;
 
     @OneToOne(mappedBy = "addition", fetch = FetchType.LAZY)
-    private Item item;
+    private ItemDb item;
 }

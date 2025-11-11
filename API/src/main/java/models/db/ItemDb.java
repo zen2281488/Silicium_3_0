@@ -1,17 +1,6 @@
 package models.db;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-import jakarta.persistence.OneToOne;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.ElementCollection;
-import jakarta.persistence.CollectionTable;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.CascadeType;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -21,7 +10,7 @@ import java.util.List;
 @Setter
 @Entity
 @Table(name = "entities")
-public class Item {
+public class ItemDb {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
@@ -42,9 +31,9 @@ public class Item {
             cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.DETACH}
     )
     @JoinColumn(name = "addition_id")
-    private Addition addition;
+    private AdditionDb addition;
 
-    public void setAddition(Addition addition) {
+    public void setAddition(AdditionDb addition) {
         this.addition = addition;
     }
 }
