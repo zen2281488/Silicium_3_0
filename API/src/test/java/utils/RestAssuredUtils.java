@@ -1,6 +1,5 @@
 package utils;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.qameta.allure.Step;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
@@ -9,7 +8,6 @@ import lombok.experimental.UtilityClass;
 import models.api.Item;
 
 import java.util.List;
-
 
 @UtilityClass
 public class RestAssuredUtils {
@@ -36,6 +34,7 @@ public class RestAssuredUtils {
                 .extract()
                 .as(String.class);
     }
+
     @Step("Удаление сущности")
     public static void deleteItem(Integer id) {
         getRestAssuredSpecification()

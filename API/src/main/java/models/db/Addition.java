@@ -1,6 +1,12 @@
 package models.db;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.FetchType;
+
 import lombok.Getter;
 import lombok.Setter;
 
