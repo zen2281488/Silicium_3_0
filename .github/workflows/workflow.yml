@@ -33,7 +33,9 @@ jobs:
         run: |
           mvn clean test -fail-at-end \
             -DDB_USER="${{ secrets.DB_USER }}" \
-            -DDB_PASSWORD="${{ secrets.DB_PASSWORD }}" 
+            -DDB_PASSWORD="${{ secrets.DB_PASSWORD }}" \
+            -DAPI_BASE_URI="${{ secrets.API_BASE_URI }}"
+      
 
       - name: Checkout gh-pages branch
         if: always()

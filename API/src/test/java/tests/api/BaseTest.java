@@ -4,7 +4,6 @@ import models.api.Addition;
 import models.api.Item;
 
 import org.junit.jupiter.api.BeforeEach;
-import services.AdditionService;
 import services.ItemService;
 import io.restassured.RestAssured;
 import io.restassured.parsing.Parser;
@@ -16,10 +15,9 @@ public abstract class BaseTest {
     protected Item newLocalItem;
     protected Addition newLocalAddition;
     protected ItemService itemService;
-    protected AdditionService additionService;
 
     static {
-        RestAssured.baseURI = "http://93.113.171.2:8080/api/";
+        RestAssured.baseURI = System.getProperty("API_BASE_URI");
         RestAssured.defaultParser = Parser.JSON;
     }
 
@@ -29,6 +27,5 @@ public abstract class BaseTest {
         newLocalItem = TestData.entity(newLocalAddition);
 
         itemService = new ItemService();
-        additionService = new AdditionService();
     }
 }
