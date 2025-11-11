@@ -1,4 +1,0 @@
-"DESCRIPTION","DURATION IN MS","NAME","PARENT SUITE","START TIME","STATUS","STOP TIME","SUB SUITE","SUITE","TEST CLASS","TEST METHOD"
-"Тестирование работоспособности базовой функциональности формы Form Fields.","18661","T-001","","Fri Oct 10 14:05:35 UTC 2025","passed","Fri Oct 10 14:05:54 UTC 2025","","anui.FormFieldsTest","anui.FormFieldsTest","fillFormPTest"
-"Тестирование блокирования функционала и подсветки нативной валидаци поля Nameи при его пропуске и полном заполнении других полей.","18613","T-003","","Fri Oct 10 14:05:35 UTC 2025","passed","Fri Oct 10 14:05:54 UTC 2025","","anui.FormFieldsTest","anui.FormFieldsTest","fillNameNTest"
-"Тестирование работоспособности функциональности формы Form Fields при заполнении исключительно обязательного поля Name.","13958","T-002","","Fri Oct 10 14:05:39 UTC 2025","passed","Fri Oct 10 14:05:53 UTC 2025","","anui.FormFieldsTest","anui.FormFieldsTest","fillNamePTest"
