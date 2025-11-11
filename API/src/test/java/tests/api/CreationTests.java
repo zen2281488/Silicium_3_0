@@ -18,20 +18,43 @@ public class CreationTests extends BaseTest {
     @Description("Тестирование создания сущности")
     @Issue("API-create-item-p")
     public void createEntityPTest() {
-        var answerApiItem = RestAssuredUtils.createItem(newLocalItem);
-        var entityId = Integer.parseInt(answerApiItem);
+        String createdIdAsString = RestAssuredUtils.createItem(newLocalItem);
+        int entityId = Integer.parseInt(createdIdAsString);
+
         var dbItem = itemService.findEntity(entityId);
+        Assertions.assertNotNull(dbItem, "Сущность не найдена в БД после создания");
+
         var dbAddition = dbItem.getAddition();
+        Assertions.assertNotNull(dbAddition, "Поле addition в БД равно null после создания");
 
         Assertions.assertAll(
-                () -> Assertions.assertNotNull(dbItem),
-                () -> Assertions.assertNotNull(dbAddition),
-                () -> Assertions.assertEquals(entityId, dbItem.getId()),
-                () -> Assertions.assertEquals(newLocalItem.getTitle(), dbItem.getTitle()),
-                () -> Assertions.assertEquals(newLocalItem.getVerified(), dbItem.getVerified()),
-                () -> Assertions.assertEquals(newLocalItem.getAddition().getAdditionalNumber(), dbAddition.getAdditionalNumber()),
-                () -> Assertions.assertEquals(newLocalItem.getAddition().getAdditionalInfo(), dbAddition.getAdditionalInfo())
+                () -> Assertions.assertEquals(
+                        entityId,
+                        dbItem.getId(),
+                        "ID сущности в БД не совпадает с ожидаемым после создания"
+                ),
+                () -> Assertions.assertEquals(
+                        newLocalItem.getTitle(),
+                        dbItem.getTitle(),
+                        "Поле title в БД не совпадает с тестовыми данными при создании"
+                ),
+                () -> Assertions.assertEquals(
+                        newLocalItem.getVerified(),
+                        dbItem.getVerified(),
+                        "Поле verified в БД не совпадает с тестовыми данными при создании"
+                ),
+                () -> Assertions.assertEquals(
+                        newLocalItem.getAddition().getAdditionalNumber(),
+                        dbAddition.getAdditionalNumber(),
+                        "Поле addition.additionalNumber в БД не совпадает с тестовыми данными при создании"
+                ),
+                () -> Assertions.assertEquals(
+                        newLocalItem.getAddition().getAdditionalInfo(),
+                        dbAddition.getAdditionalInfo(),
+                        "Поле addition.additionalInfo в БД не совпадает с тестовыми данными при создании"
+                )
         );
+
         itemService.deleteEntity(dbItem);
     }
 
@@ -42,45 +65,84 @@ public class CreationTests extends BaseTest {
     @Description("Тестирование удаления сущности")
     @Issue("API-delete-item-p")
     public void deleteEntityPTest() {
-        var answerApiItem = RestAssuredUtils.createItem(newLocalItem);
-        var entityId = Integer.parseInt(answerApiItem);
+        String createdIdAsString = RestAssuredUtils.createItem(newLocalItem);
+        int entityId = Integer.parseInt(createdIdAsString);
 
-
-        Assertions.assertNotNull(itemService.findEntity(entityId));
+        Assertions.assertNotNull(
+                itemService.findEntity(entityId),
+                "Сущность не найдена в БД перед удалением"
+        );
 
         RestAssuredUtils.deleteItem(entityId);
 
-        Assertions.assertTrue(
-                itemService.findAllEntities().stream().noneMatch(item -> item.getId().equals(entityId))
+        boolean entityExists = itemService.findAllEntities().stream()
+                .anyMatch(item -> entityId == item.getId());
+
+        Assertions.assertFalse(
+                entityExists,
+                "Сущность с id = " + entityId + " не была удалена из БД"
         );
     }
 
-    @Feature("Получение сущности")
+    @Feature("Получение сущности по id")
     @Test
     @DisplayName("T-009")
     @Severity(SeverityLevel.CRITICAL)
-    @Description("Тестирование получения сущности по айди")
+    @Description("Тестирование получения сущности по id")
     @Issue("API-id-get-item-p")
     public void idGetEntityPTest() {
-        var answerApiItem = RestAssuredUtils.createItem(newLocalItem);
-        var entityId = Integer.parseInt(answerApiItem);
-        Assertions.assertNotNull(itemService.findEntity(entityId));
+        String createdIdAsString = RestAssuredUtils.createItem(newLocalItem);
+        int entityId = Integer.parseInt(createdIdAsString);
 
-        Item item = RestAssuredUtils.idGetItem(entityId);
+        var dbItemBefore = itemService.findEntity(entityId);
+        Assertions.assertNotNull(dbItemBefore, "Сущность не найдена в БД перед GET по id");
 
-        var dbItem = itemService.findEntity(item.getId());
+        Item apiItem = RestAssuredUtils.idGetItem(entityId);
+
+        var dbItem = itemService.findEntity(apiItem.getId());
 
         Assertions.assertAll(
-                () -> Assertions.assertNotNull(dbItem),
-                () -> Assertions.assertNotNull(dbItem.getAddition()),
-                () -> Assertions.assertEquals(entityId, dbItem.getId()),
-                () -> Assertions.assertEquals(item.getTitle(), dbItem.getTitle()),
-                () -> Assertions.assertEquals(item.getVerified(), dbItem.getVerified()),
-                () -> Assertions.assertEquals(item.getAddition().getAdditionalNumber(), dbItem.getAddition().getAdditionalNumber()),
-                () -> Assertions.assertEquals(item.getAddition().getAdditionalInfo(), dbItem.getAddition().getAdditionalInfo())
+                () -> Assertions.assertNotNull(
+                        dbItem,
+                        "Сущность не найдена в БД после GET по id"
+                ),
+                () -> Assertions.assertNotNull(
+                        dbItem.getAddition(),
+                        "Поле addition в БД равно null после GET по id"
+                ),
+                () -> Assertions.assertEquals(
+                        entityId,
+                        apiItem.getId(),
+                        "ID сущности в ответе API не совпадает с ожидаемым"
+                ),
+                () -> Assertions.assertEquals(
+                        entityId,
+                        dbItem.getId(),
+                        "ID сущности в БД не совпадает с ожидаемым"
+                ),
+                () -> Assertions.assertEquals(
+                        apiItem.getTitle(),
+                        dbItem.getTitle(),
+                        "Поле title в БД не совпадает со значением из API"
+                ),
+                () -> Assertions.assertEquals(
+                        apiItem.getVerified(),
+                        dbItem.getVerified(),
+                        "Поле verified в БД не совпадает со значением из API"
+                ),
+                () -> Assertions.assertEquals(
+                        apiItem.getAddition().getAdditionalNumber(),
+                        dbItem.getAddition().getAdditionalNumber(),
+                        "Поле addition.additionalNumber в БД не совпадает со значением из API"
+                ),
+                () -> Assertions.assertEquals(
+                        apiItem.getAddition().getAdditionalInfo(),
+                        dbItem.getAddition().getAdditionalInfo(),
+                        "Поле addition.additionalInfo в БД не совпадает со значением из API"
+                )
         );
-        itemService.deleteEntity(dbItem);
 
+        itemService.deleteEntity(dbItem);
     }
 
     @Feature("Получение всех сущностей")
@@ -90,49 +152,69 @@ public class CreationTests extends BaseTest {
     @Description("Тестирование получения всех сущностей")
     @Issue("API-getAll-item-p")
     public void getAllEntityPTest() {
-        var firstAnswerApiItem = RestAssuredUtils.createItem(newLocalItem);
-        var firstEntityId = Integer.parseInt(firstAnswerApiItem);
-        var secondAnswerApiItem = RestAssuredUtils.createItem(newLocalItem);
-        var secondEntityId = Integer.parseInt(secondAnswerApiItem);
+        String firstCreatedIdAsString = RestAssuredUtils.createItem(newLocalItem);
+        int firstEntityId = Integer.parseInt(firstCreatedIdAsString);
 
-        Assertions.assertNotNull(itemService.findEntity(firstEntityId));
-        Assertions.assertNotNull(itemService.findEntity(secondEntityId));
+        String secondCreatedIdAsString = RestAssuredUtils.createItem(newLocalItem);
+        int secondEntityId = Integer.parseInt(secondCreatedIdAsString);
+
+        Assertions.assertNotNull(
+                itemService.findEntity(firstEntityId),
+                "Первая сущность не найдена в БД перед GET /getAll"
+        );
+        Assertions.assertNotNull(
+                itemService.findEntity(secondEntityId),
+                "Вторая сущность не найдена в БД перед GET /getAll"
+        );
 
         List<models.api.Item> itemsFromApi = RestAssuredUtils.getAll();
-        List<models.db.Item>  itemsFromDb  = itemService.findAllEntities();
+        List<models.db.Item> itemsFromDb = itemService.findAllEntities();
 
         List<Integer> createdIds = List.of(firstEntityId, secondEntityId);
 
         createdIds.forEach(id -> {
-            models.db.Item dbItem = itemsFromDb.stream()
-                    .filter(i -> i.getId().equals(id))
+            var dbItem = itemsFromDb.stream()
+                    .filter(i -> id == i.getId())
                     .findFirst()
                     .orElseThrow(() -> new AssertionError(
-                            "В БД нет сущности с id = " + id
+                            "Сущность с id = " + id + " не найдена в БД при проверке GET /getAll"
                     ));
 
-            models.api.Item apiItem = itemsFromApi.stream()
-                    .filter(i -> i.getId().equals(id))
+            var apiItem = itemsFromApi.stream()
+                    .filter(i -> id == i.getId())
                     .findFirst()
                     .orElseThrow(() -> new AssertionError(
-                            "В ответе API нет сущности с id = " + id
+                            "Сущность с id = " + id + " не найдена в ответе API GET /getAll"
                     ));
 
             Assertions.assertAll(
-                    () -> Assertions.assertEquals(dbItem.getId(), apiItem.getId(), "id"),
-                    () -> Assertions.assertEquals(dbItem.getTitle(), apiItem.getTitle(), "title"),
-                    () -> Assertions.assertEquals(dbItem.getVerified(), apiItem.getVerified(), "verified"),
-                    () -> Assertions.assertNotNull(dbItem.getAddition(), "addition в БД не должен быть null"),
-                    () -> Assertions.assertNotNull(apiItem.getAddition(), "addition в API не должен быть null"),
-                    () -> Assertions.assertEquals(
-                            dbItem.getAddition().getAdditionalInfo(),
-                            apiItem.getAddition().getAdditionalInfo(),
-                            "additionalInfo"
+                    () -> Assertions.assertNotNull(
+                            dbItem.getAddition(),
+                            "Поле addition в БД равно null для сущности с id = " + id
+                    ),
+                    () -> Assertions.assertNotNull(
+                            apiItem.getAddition(),
+                            "Поле addition в ответе API равно null для сущности с id = " + id
                     ),
                     () -> Assertions.assertEquals(
-                            dbItem.getAddition().getAdditionalNumber(),
+                            apiItem.getTitle(),
+                            dbItem.getTitle(),
+                            "Поле title в БД не совпадает со значением из API для сущности с id = " + id
+                    ),
+                    () -> Assertions.assertEquals(
+                            apiItem.getVerified(),
+                            dbItem.getVerified(),
+                            "Поле verified в БД не совпадает со значением из API для сущности с id = " + id
+                    ),
+                    () -> Assertions.assertEquals(
+                            apiItem.getAddition().getAdditionalInfo(),
+                            dbItem.getAddition().getAdditionalInfo(),
+                            "Поле addition.additionalInfo в БД не совпадает со значением из API для сущности с id = " + id
+                    ),
+                    () -> Assertions.assertEquals(
                             apiItem.getAddition().getAdditionalNumber(),
-                            "additionalNumber"
+                            dbItem.getAddition().getAdditionalNumber(),
+                            "Поле addition.additionalNumber в БД не совпадает со значением из API для сущности с id = " + id
                     )
             );
         });
@@ -148,13 +230,11 @@ public class CreationTests extends BaseTest {
     @Description("Тестирование обновления сущности и её дополнений")
     @Issue("API-patch-item-p")
     public void patchEntityPTest() {
-        var answerApiItem = RestAssuredUtils.createItem(newLocalItem);
-        var entityId = Integer.parseInt(answerApiItem);
+        String createdIdAsString = RestAssuredUtils.createItem(newLocalItem);
+        int entityId = Integer.parseInt(createdIdAsString);
 
-        Assertions.assertNotNull(
-                itemService.findEntity(entityId),
-                "Сущность не создалась в БД"
-        );
+        var originalDbItem = itemService.findEntity(entityId);
+        Assertions.assertNotNull(originalDbItem, "Сущность не найдена в БД перед PATCH");
 
         Item updatedItem = TestData.patchedEntity(newLocalItem);
 
@@ -163,28 +243,38 @@ public class CreationTests extends BaseTest {
         var patchedDbItem = itemService.findEntity(entityId);
 
         Assertions.assertAll(
-                () -> Assertions.assertNotNull(patchedDbItem, "После PATCH сущность отсутствует в БД"),
-                () -> Assertions.assertNotNull(patchedDbItem.getAddition(), "После PATCH addition в БД null"),
-                () -> Assertions.assertEquals(entityId, patchedDbItem.getId(), "id"),
+                () -> Assertions.assertNotNull(
+                        patchedDbItem,
+                        "Сущность не найдена в БД после PATCH"
+                ),
+                () -> Assertions.assertNotNull(
+                        patchedDbItem.getAddition(),
+                        "Поле addition в БД равно null после PATCH"
+                ),
+                () -> Assertions.assertEquals(
+                        entityId,
+                        patchedDbItem.getId(),
+                        "ID сущности в БД не совпадает с ожидаемым после PATCH"
+                ),
                 () -> Assertions.assertEquals(
                         updatedItem.getTitle(),
                         patchedDbItem.getTitle(),
-                        "title"
+                        "Поле title в БД не совпадает с ожидаемым (обновлённым)"
                 ),
                 () -> Assertions.assertEquals(
                         updatedItem.getVerified(),
                         patchedDbItem.getVerified(),
-                        "verified"
+                        "Поле verified в БД не совпадает с ожидаемым (обновлённым)"
                 ),
                 () -> Assertions.assertEquals(
                         updatedItem.getAddition().getAdditionalInfo(),
                         patchedDbItem.getAddition().getAdditionalInfo(),
-                        "additionalInfo"
+                        "Поле addition.additionalInfo в БД не совпадает с ожидаемым (обновлённым)"
                 ),
                 () -> Assertions.assertEquals(
                         updatedItem.getAddition().getAdditionalNumber(),
                         patchedDbItem.getAddition().getAdditionalNumber(),
-                        "additionalNumber"
+                        "Поле addition.additionalNumber в БД не совпадает с ожидаемым (обновлённым)"
                 )
         );
 
@@ -194,27 +284,25 @@ public class CreationTests extends BaseTest {
                 () -> Assertions.assertEquals(
                         updatedItem.getTitle(),
                         apiAfterPatch.getTitle(),
-                        "API title"
+                        "Поле title в ответе API не совпадает с ожидаемым (обновлённым)"
                 ),
                 () -> Assertions.assertEquals(
                         updatedItem.getVerified(),
                         apiAfterPatch.getVerified(),
-                        "API verified"
+                        "Поле verified в ответе API не совпадает с ожидаемым (обновлённым)"
                 ),
                 () -> Assertions.assertEquals(
                         updatedItem.getAddition().getAdditionalInfo(),
                         apiAfterPatch.getAddition().getAdditionalInfo(),
-                        "API additionalInfo"
+                        "Поле addition.additionalInfo в ответе API не совпадает с ожидаемым (обновлённым)"
                 ),
                 () -> Assertions.assertEquals(
                         updatedItem.getAddition().getAdditionalNumber(),
                         apiAfterPatch.getAddition().getAdditionalNumber(),
-                        "API additionalNumber"
+                        "Поле addition.additionalNumber в ответе API не совпадает с ожидаемым (обновлённым)"
                 )
         );
 
         itemService.deleteEntity(patchedDbItem);
     }
-
-
 }
